@@ -1834,70 +1834,61 @@ void exportQueueToFile()
 {
   if (!commandQueue.isEmpty() || !realtimeCommandQueue.isEmpty())
   {
-    String savePath = selectOutput();  // Opens file chooser
-    if (savePath == null) 
-    {
-      // If a file was not selected
-      println("No output file was selected...");
-    } 
-    else 
-    {
-      // If a file was selected, print path to folder
-      println("Output file: " + savePath);
-      List<String> allCommands = new ArrayList<String>(realtimeCommandQueue);
-      allCommands.addAll(commandQueue);
-      
-      String[] list = (String[]) allCommands.toArray(new String[0]);
-      saveStrings(savePath, list);
-      println("Completed queue export, " + list.length + " commands exported.");
-    }  
+    selectOutput("Select a file to write to:", "exportQueueToFile_fileSelected");
   }
+}
+void exportQueueToFile_fileSelected(File selection)
+{
+  if (selection == null) return;
+  String savePath = selection.getAbsolutePath();
+  println("Output file: " + savePath);
+  List<String> allCommands = new ArrayList<String>(realtimeCommandQueue);
+  allCommands.addAll(commandQueue);
+  String[] list = (String[]) allCommands.toArray(new String[0]);
+  saveStrings(savePath, list);
+  println("Completed queue export, " + list.length + " commands exported.");
 }
 void importQueueFromFile()
 {
+  selectInput("Select a file to import:", "importQueueFromFile_fileSelected");
+}
+void importQueueFromFile_fileSelected(File selection)
+{
+  if (selection == null) return;
   commandQueue.clear();
-  String loadPath = selectInput();
-  if (loadPath == null)
-  {
-    // nothing selected
-    println("No input file was selected.");
-  }
-  else
-  {
-    println("Input file: " + loadPath);
-    String commands[] = loadStrings(loadPath);
-//    List<String> list = Arrays
-    commandQueue.addAll(Arrays.asList(commands));
-    println("Completed queue import, " + commandQueue.size() + " commands found.");
-  }
+  String loadPath = selection.getAbsolutePath();
+  println("Input file: " + loadPath);
+  String commands[] = loadStrings(loadPath);
+  commandQueue.addAll(Arrays.asList(commands));
+  println("Completed queue import, " + commandQueue.size() + " commands found.");
 }
 
 String importTextToWriteFromFile()
 {
-  String loadPath = selectInput();
-  String result = "";
-  if (loadPath == null)
-  {
-    // nothing selected
-    println("No input file was selected.");
-  }
-  else
-  {
-    println("Input file: " + loadPath);
-    List<String> rows = java.util.Arrays.asList(loadStrings(loadPath));
-    StringBuilder sb = new StringBuilder(200);
-    for (String row : rows) 
-    {
-      sb.append(row);
-    }
-    result = sb.toString();
-
-    println("Completed text import, " + result.length() + " characters found.");
-  }
-  return result;
+  javax.swing.JOptionPane.showMessageDialog(null, "Not yet implemented.");
+//  String loadPath = selectInput();
+//  String result = "";
+//  if (loadPath == null)
+//  {
+//    // nothing selected
+//    println("No input file was selected.");
+//  }
+//  else
+//  {
+//    println("Input file: " + loadPath);
+//    List<String> rows = java.util.Arrays.asList(loadStrings(loadPath));
+//    StringBuilder sb = new StringBuilder(200);
+//    for (String row : rows) 
+//    {
+//      sb.append(row);
+//    }
+//    result = sb.toString();
+//
+//    println("Completed text import, " + result.length() + " characters found.");
+//  }
+//  return result;
+  return "";
 }
-
-
 
 void queueClicked()
 {
@@ -2680,7 +2671,7 @@ void dispatchCommandQueue()
       println("Dispatching command: " + command);
     }
     if (useChecksum()) {
-      Checksum crc = new CRC32();
+      java.util.zip.Checksum crc = new CRC32();
       crc.update(lastCommand.getBytes(), 0, lastCommand.length());
       lastCommand = lastCommand+":"+crc.getValue();
     }
