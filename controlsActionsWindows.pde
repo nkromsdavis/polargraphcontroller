@@ -31,15 +31,16 @@
     Details about the "serial port" subwindow
 ------------------------------------------------------------------------*/
 
-// Copied from: http://www.sojamo.de/libraries/controlP5/examples/extra/ControlP5frame/ControlP5frame.pde
+// Derived from: http://www.sojamo.de/libraries/controlP5/examples/extra/ControlP5frame/ControlP5frame.pde
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.BorderLayout;
 ControlFrame addControlFrame(String theName, int x, int y, int theWidth, int theHeight) {
-  Frame f = new Frame(theName);
+  JFrame f = new JFrame(theName);
   ControlFrame p = new ControlFrame(this, theWidth, theHeight);
   f.add(p);
   p.init();
+  p.setup();
   f.setTitle(theName);
   f.setSize(p.w, p.h);
   f.setLocation(x, y);
@@ -52,16 +53,13 @@ ControlFrame addControlFrame(String theName, int x, int y, int theWidth, int the
 // new frame with a controlP5 object loaded
 public class ControlFrame extends PApplet {
   int w, h;
-  int abc = 100;
   public void setup() {
     size(w, h);
     frameRate(25);
     cp5 = new ControlP5(this);
-    cp5.addSlider("abc").setRange(0, 255).setPosition(10,10);
-    cp5.addSlider("def").plugTo(parent,"def").setRange(0, 255).setPosition(10,30);
   }
   public void draw() {
-      background(abc);
+      background(getBackgroundColour());
   }
   private ControlFrame() {
   }
@@ -79,16 +77,11 @@ public class ControlFrame extends PApplet {
 
 void button_mode_serialPortDialog()
 {
-  ControlFrame serialPortWindow = addControlFrame("changeSerialPortWindow",100,100,150,350);
-  serialPortWindow.setBackground(new Color(getBackgroundColour()));
-  RadioButton r = cp5.addRadio("radio_serialPort",10,10);
-  r.moveTo(serialPortWindow);
+  ControlFrame serialPortWindow = addControlFrame("changeSerialPortWindow",100,100,250,350);
+  RadioButton r = serialPortWindow.control().addRadio("radio_serialPort",10,10);
 
   String[] ports = Serial.list();
-  if (getSerialPortNumber() >= 0 && getSerialPortNumber() < ports.length)
-    r.setValue(getSerialPortNumber());
-    
-  r.add("setup", -2);
+  if (getSerialPortNumber() >= 0 && getSerialPortNumber() < ports.length) r.setValue(getSerialPortNumber());
   r.add("No serial connection", -1);
   
   for (int i = 0; i < ports.length; i++)
@@ -101,12 +94,14 @@ void button_mode_serialPortDialog()
     r.activate(ports[portNo]);
   else
     r.activate("No serial connection");
-    
-  r.removeItem("setup");
+}
+public class SerialListener implements ControlListener {
+  
 }
 
 void radio_serialPort(int newSerialPort) 
 {
+  println("newSerialPort: " + newSerialPort);
   if (newSerialPort == -2)
   {
   }
@@ -178,18 +173,17 @@ ControlFrame dialogWindow = null;
 void button_mode_machineStoreDialog()
 {
   this.dialogWindow = addControlFrame("chooseStoreFilenameWindow",100,100,450,150);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
-
-  Textfield filenameField = cp5.addTextfield("storeFilename",20,20,150,20);
+  
+  Textfield filenameField = this.dialogWindow.control().addTextfield("storeFilename",20,20,150,20);
   filenameField.setText(getStoreFilename());
   filenameField.setLabel("Filename to store to");
   filenameField.moveTo(dialogWindow);
 
-  Button submitButton = cp5.addButton("submitStoreFilenameWindow",0,180,20,60,20);
+  Button submitButton = this.dialogWindow.control().addButton("submitStoreFilenameWindow",0,180,20,60,20);
   submitButton.setLabel("Submit");
   submitButton.moveTo(dialogWindow);
 
-  Toggle overwriteToggle = cp5.addToggle("toggleAppendToFile",true,180,50,20,20);
+  Toggle overwriteToggle = this.dialogWindow.control().addToggle("toggleAppendToFile",true,180,50,20,20);
   overwriteToggle.setCaptionLabel("Overwrite existing file");
   overwriteToggle.moveTo(dialogWindow);
 
@@ -221,14 +215,13 @@ void submitStoreFilenameWindow(int theValue)
 void button_mode_machineExecDialog()
 {
   this.dialogWindow = addControlFrame("chooseExecFilenameWindow",100,100,450,150);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
 
-  Textfield filenameField = cp5.addTextfield("execFilename",20,20,150,20);
+  Textfield filenameField = this.dialogWindow.control().addTextfield("execFilename",20,20,150,20);
   filenameField.setText(getStoreFilename());
   filenameField.setLabel("Filename to execute from");
   filenameField.moveTo(dialogWindow);
 
-  Button submitButton = cp5.addButton("submitExecFilenameWindow",0,180,20,60,20);
+  Button submitButton = this.dialogWindow.control().addButton("submitExecFilenameWindow",0,180,20,60,20);
   submitButton.setLabel("Submit");
   submitButton.moveTo(dialogWindow);
 
@@ -266,26 +259,25 @@ void button_mode_sendMachineLiveMode()
 void button_mode_drawPixelsDialog()
 {
   this.dialogWindow = addControlFrame("drawPixelsWindow",100,100,450,150);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
 
-  RadioButton rPos = cp5.addRadio("radio_startPosition",10,10);
+  RadioButton rPos = this.dialogWindow.control().addRadio("radio_startPosition",10,10);
   rPos.add("Top-right", DRAW_DIR_NE);
   rPos.add("Bottom-right", DRAW_DIR_SE);
   rPos.add("Bottom-left", DRAW_DIR_SW);
   rPos.add("Top-left", DRAW_DIR_NW);
   rPos.moveTo(dialogWindow);
 
-  RadioButton rSkip = cp5.addRadio("radio_pixelSkipStyle",10,100);
+  RadioButton rSkip = this.dialogWindow.control().addRadio("radio_pixelSkipStyle",10,100);
   rSkip.add("Lift pen over masked pixels", 1);
   rSkip.add("Draw masked pixels as blanks", 2);
   rSkip.moveTo(dialogWindow);
 
-//  Radio rDir = cp5.addRadio("radio_rowStartDirection",100,10);
+//  Radio rDir = this.dialogWindow.control().addRadio("radio_rowStartDirection",100,10);
 //  rDir.add("Upwards", 0);
 //  rDir.add("Downwards", 1);
 //  rDir.moveTo(dialogWindow);
 
-  RadioButton rStyle = cp5.addRadio("radio_pixelStyle",100,10);
+  RadioButton rStyle = this.dialogWindow.control().addRadio("radio_pixelStyle",100,10);
   rStyle.add("Variable frequency square wave", PIXEL_STYLE_SQ_FREQ);
   rStyle.add("Variable size square wave", PIXEL_STYLE_SQ_SIZE);
   rStyle.add("Solid square wave", PIXEL_STYLE_SQ_SOLID);
@@ -297,7 +289,7 @@ void button_mode_drawPixelsDialog()
   }
   rStyle.moveTo(dialogWindow);
 
-  Button submitButton = cp5.addButton("submitDrawWindow",0,280,10,120,20);
+  Button submitButton = this.dialogWindow.control().addButton("submitDrawWindow",0,280,10,120,20);
   submitButton.setLabel("Generate commands");
   submitButton.moveTo(dialogWindow);
   
@@ -360,23 +352,22 @@ String spriteFileSuffix = ".txt";
 void button_mode_drawWritingDialog()
 {
   this.dialogWindow = addControlFrame("drawWritingWindow",100,100,450,200);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
-
-  Textfield spriteFileField = cp5.addTextfield("spriteFilePrefixField",20,20,150,20);
+  
+  Textfield spriteFileField = this.dialogWindow.control().addTextfield("spriteFilePrefixField",20,20,150,20);
   spriteFileField.setText(getSpriteFilePrefix());
   spriteFileField.setLabel("File prefix");
   spriteFileField.moveTo(dialogWindow);
 
-  Textfield writingField = cp5.addTextfield("textToWriteField",20,60,400,20);
+  Textfield writingField = this.dialogWindow.control().addTextfield("textToWriteField",20,60,400,20);
   writingField.setText(getTextToWrite());
   writingField.setLabel("Text to write");
   writingField.moveTo(dialogWindow);
 
-  Button importTextButton = cp5.addButton("importTextButton",0,20,100,120,20);
+  Button importTextButton = this.dialogWindow.control().addButton("importTextButton",0,20,100,120,20);
   importTextButton.setLabel("Load text from file");
   importTextButton.moveTo(dialogWindow);
 
-  RadioButton rPos = cp5.addRadio("radio_drawWritingDirection",20,140);
+  RadioButton rPos = this.dialogWindow.control().addRadio("radio_drawWritingDirection",20,140);
 //  rPos.add("North-east", DRAW_DIR_NE);
   rPos.add("South-east", DRAW_DIR_SE);
 //  rPos.add("South-west", DRAW_DIR_SW);
@@ -456,15 +447,14 @@ int maxSpriteSize = 500;
 void button_mode_drawSpriteDialog()
 {
   this.dialogWindow = addControlFrame("drawSpriteWindow",100,100,450,200);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
 
   delay(200);
-  Textfield spriteFilenameField = cp5.addTextfield("spriteFilenameField",20,20,400,20);
+  Textfield spriteFilenameField = this.dialogWindow.control().addTextfield("spriteFilenameField",20,20,400,20);
   spriteFilenameField.setText("filename.txt");
   spriteFilenameField.setLabel("Sprite filename");
   spriteFilenameField.moveTo(dialogWindow);
 
-  Numberbox minSizeField = cp5.addNumberbox("minimumSpriteSize",20,60,100,20);
+  Numberbox minSizeField = this.dialogWindow.control().addNumberbox("minimumSpriteSize",20,60,100,20);
   minSizeField.setValue(getMinimumSpriteSize());
   minSizeField.setMin(10);
   minSizeField.setMax(getMaximumSpriteSize());
@@ -472,14 +462,14 @@ void button_mode_drawSpriteDialog()
   minSizeField.setLabel("Minimum size");
   minSizeField.moveTo(dialogWindow);
 
-  Numberbox maxSizeField = cp5.addNumberbox("maximumSpriteSize",20,100,100,20);
+  Numberbox maxSizeField = this.dialogWindow.control().addNumberbox("maximumSpriteSize",20,100,100,20);
   maxSizeField.setValue(getMaximumSpriteSize());
   maxSizeField.setMin(getMinimumSpriteSize());
   maxSizeField.setMultiplier(0.5);  
   maxSizeField.setLabel("Maximum size");
   maxSizeField.moveTo(dialogWindow);
 
-  RadioButton rPos = cp5.addRadio("radio_drawWritingDirection",20,140);
+  RadioButton rPos = this.dialogWindow.control().addRadio("radio_drawWritingDirection",20,140);
   rPos.add("North-east", DRAW_DIR_NE);
   rPos.add("South-east", DRAW_DIR_SE);
   rPos.add("South-west", DRAW_DIR_SW);
@@ -538,21 +528,20 @@ int norwegianWavelength = 2;
 void button_mode_drawNorwegianDialog()
 {
   this.dialogWindow = addControlFrame("chooseNorwegianFilenameWindow",100,100,450,150);
-  dialogWindow.setBackground(new Color(getBackgroundColour()));
-
-  Textfield filenameField = cp5.addTextfield("norwegianExecFilename",20,20,150,20);
+  
+  Textfield filenameField = this.dialogWindow.control().addTextfield("norwegianExecFilename",20,20,150,20);
   filenameField.setText(norwegianExecFilename);
   filenameField.setLabel("Filename to execute from");
   filenameField.moveTo(dialogWindow);
 
-  Numberbox minSizeField = cp5.addNumberbox("norwegianAmplitude",20,60,100,20);
+  Numberbox minSizeField = this.dialogWindow.control().addNumberbox("norwegianAmplitude",20,60,100,20);
   minSizeField.setValue(norwegianAmplitude);
   minSizeField.setMin(10);
   minSizeField.setMultiplier(0.5);  
   minSizeField.setLabel("Amplitude");
   minSizeField.moveTo(dialogWindow);
 
-  Numberbox maxSizeField = cp5.addNumberbox("norwegianWavelength",20,100,100,20);
+  Numberbox maxSizeField = this.dialogWindow.control().addNumberbox("norwegianWavelength",20,100,100,20);
   maxSizeField.setValue(norwegianWavelength);
   maxSizeField.setMin(1);
   maxSizeField.setMultiplier(0.5);  
